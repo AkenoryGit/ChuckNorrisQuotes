@@ -7,16 +7,38 @@
 
 import UIKit
 
+
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
 
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-        // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
-        // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
-        // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
-        guard let _ = (scene as? UIWindowScene) else { return }
+        guard let windowScene = (scene as? UIWindowScene) else { return }
+
+        let window = UIWindow(windowScene: windowScene)
+
+        let loadVC = LoadQuoteViewController()
+        loadVC.title = "Загрузить"
+        let loadNav = UINavigationController(rootViewController: loadVC)
+        loadNav.tabBarItem = UITabBarItem(title: "Загрузить", image: UIImage(systemName: "arrow.down.circle"), tag: 0)
+
+        let savedVC = QuotesListViewController()
+        savedVC.title = "Цитаты"
+        let savedNav = UINavigationController(rootViewController: savedVC)
+        savedNav.tabBarItem = UITabBarItem(title: "Цитаты", image: UIImage(systemName: "text.bubble"), tag: 1)
+
+        let categoriesVC = CategoriesViewController()
+        categoriesVC.title = "Категории"
+        let categoriesNav = UINavigationController(rootViewController: categoriesVC)
+        categoriesNav.tabBarItem = UITabBarItem(title: "Категории", image: UIImage(systemName: "list.bullet.rectangle"), tag: 2)
+
+        let tabBarController = UITabBarController()
+        tabBarController.viewControllers = [loadNav, savedNav, categoriesNav]
+
+        window.rootViewController = tabBarController
+        self.window = window
+        window.makeKeyAndVisible()
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
