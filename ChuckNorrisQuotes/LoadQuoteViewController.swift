@@ -53,7 +53,13 @@ final class LoadQuoteViewController: UIViewController {
 
             let categoryName = (json["categories"] as? [String])?.first ?? "без категории"
 
-            let realm = try! Realm()
+            let realm: Realm
+            do {
+                realm = try Realm()
+            } catch {
+                print("Ошибка при создании Realm: \(error.localizedDescription)")
+                return
+            }
 
             if realm.object(ofType: Quote.self, forPrimaryKey: id) != nil {
                 print("Цитата уже существует в базе: \(text)")
@@ -64,20 +70,24 @@ final class LoadQuoteViewController: UIViewController {
             quote.id = id
             quote.text = text
 
-            try! realm.write {
-                let category: Category
+            do {
+                try realm.write {
+                    let category: Category
 
-                if let existing = realm.object(ofType: Category.self, forPrimaryKey: categoryName) {
-                    category = existing
-                } else {
-                    let newCategory = Category()
-                    newCategory.name = categoryName
-                    realm.add(newCategory)
-                    category = newCategory
+                    if let existing = realm.object(ofType: Category.self, forPrimaryKey: categoryName) {
+                        category = existing
+                    } else {
+                        let newCategory = Category()
+                        newCategory.name = categoryName
+                        realm.add(newCategory)
+                        category = newCategory
+                    }
+
+                    quote.category = category
+                    realm.add(quote)
                 }
-
-                quote.category = category
-                realm.add(quote)
+            } catch {
+                print("Ошибка при записи в Realm: \(error.localizedDescription)")
             }
             
             DispatchQueue.main.async {

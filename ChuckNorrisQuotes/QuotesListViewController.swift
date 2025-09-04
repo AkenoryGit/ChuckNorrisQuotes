@@ -74,24 +74,34 @@ class QuotesListViewController: UIViewController, UITableViewDataSource, UITable
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle,
                    forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            let realm = try! Realm()
+            let realm: Realm
+            do {
+                realm = try Realm()
+            } catch {
+                print("Ошибка при получении Realm: \(error.localizedDescription)")
+                return
+            }
             let quoteToDelete = quotes[indexPath.row]
 
             let category = quoteToDelete.category
 
-            try! realm.write {
-                realm.delete(quoteToDelete)
+            do {
+                try realm.write {
+                    realm.delete(quoteToDelete)
 
-                if let category = category {
-                    let quotesInCategory = realm.objects(Quote.self)
-                        .filter("category.name == %@", category.name)
+                    if let category = category {
+                        let quotesInCategory = realm.objects(Quote.self)
+                            .filter("category.name == %@", category.name)
 
-                    if quotesInCategory.isEmpty {
-                        if let categoryToDelete = realm.object(ofType: Category.self, forPrimaryKey: category.name) {
-                            realm.delete(categoryToDelete)
+                        if quotesInCategory.isEmpty {
+                            if let categoryToDelete = realm.object(ofType: Category.self, forPrimaryKey: category.name) {
+                                realm.delete(categoryToDelete)
+                            }
                         }
                     }
                 }
+            } catch {
+                print("Ошибка при удалении цитаты: \(error.localizedDescription)")
             }
         }
     }
