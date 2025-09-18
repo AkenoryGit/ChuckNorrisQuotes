@@ -6,6 +6,8 @@
 //
 
 import UIKit
+import RealmSwift
+import Security
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -13,7 +15,30 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+
+        let keychainKey = "realmEncryptionKey"
+
+        var key: Data
+        if let savedKey = KeychainHelper.loadKey(for: keychainKey) {
+            key = savedKey
+        } else {
+            key = Data(count: 64)
+            _ = key.withUnsafeMutableBytes {
+                SecRandomCopyBytes(kSecRandomDefault, 64, $0.baseAddress!)
+            }
+            KeychainHelper.saveKey(key, for: keychainKey)
+        }
+
+        let config = Realm.Configuration(encryptionKey: key)
+        Realm.Configuration.defaultConfiguration = config
+
+        do {
+            _ = try Realm()
+            print("Realm успешно открыт с шифрованием")
+        } catch {
+            print("Ошибка открытия Realm: \(error)")
+        }
+
         return true
     }
 
